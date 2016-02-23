@@ -1,0 +1,19 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../f-singleton.html">
+
+<dom-module id="some-element">
+  <template>
+    <f-singleton data="{{data}}"></f-singleton>
+
+    <!-- One-way binding since you should only set singleton data using .set -->
+    <input on-input="_set" value="[[data.test]]"></input>
+  </template>
+  <script>
+    Polymer({
+      is: 'some-element',
+      _set: function(e) {
+        this.$$('f-singleton').set('data.test', e.target.value);
+      }
+    });
+  </script>
+</dom-module>

@@ -1,0 +1,92 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<!--
+`<f-singleton>` element helps implementing singleton pattern declaratively.
+
+Common use case is to provide shared state in your elements (e.g. configuration).
+
+Example:
+
+    <f-singleton data="{{data}}"></f-singleton>
+    <p>[[data.something]]</p>
+
+@element f-singleton
+@demo demo/index.html
+-->
+
+<script>
+
+(function() {
+  'use strict'
+  let instances = [];
+  let state = {};
+
+  Polymer({
+    is: 'f-singleton',
+    properties: {
+      /**
+       * Every instance of `<f-singleton>` points to the same `data` object.
+       * **Do not** use Polymer's two-way binding to set properties of `data`.
+       * Instead, call methods on `<x-singleton>` element like this:
+       *
+       *     this.$$('x-singleton').set('data.prop', 'val')
+       *
+       * Supported methods are:
+       *   - `set(path, value)`
+       *   - `push(path, item)`
+       *   - `notifyPath(path, value, fromAbove)`
+       *
+       * @default {}
+       */
+      data: {
+        type: Object,
+        readOnly: true,
+        value: () => state
+      }
+    },
+
+    created: function() {
+      var override = (originalFn, override) => (...args) => {
+        originalFn.apply(this, args);
+        if (args[0].split(".")[0] === "data") {
+          override(args);
+        }
+      };
+
+      var originalNotifyPath = this.notifyPath;
+      var notifyPathAll = (args) => this._invokeInstances(originalNotifyPath, args);
+
+      this.set = override(this.set, notifyPathAll);
+      this.notifyPath = override(this.notifyPath, notifyPathAll);
+
+      this.push = override(this.push, (args) => {
+        var path = args[0];
+        var array = this.get(path);
+        var pushed = Array.prototype.slice.call(args, 1);
+        var splice = {
+          type: 'splice',
+          object: array,
+          removed: [],
+          addedCount: pushed.length,
+          index: array.length - pushed.length
+        };
+        this._invokeInstances(this.notifySplices, [path, [splice]]);
+      });
+      instances.push(this);
+    },
+
+    detached: function() { instances.splice(instances.indexOf(this), 1); },
+
+    _invokeInstances: function(fn, args) {
+      for (var i = 0; i < instances.length; i++) {
+        let instance = instances[i];
+        if (instance !== this) {
+          fn.apply(instance, args);
+        }
+      }
+    }
+  });
+
+})();
+
+</script>
