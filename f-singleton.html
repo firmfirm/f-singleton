@@ -27,9 +27,9 @@ Example:
       /**
        * Every instance of `<f-singleton>` points to the same `data` object.
        * **Do not** use Polymer's two-way binding to set properties of `data`.
-       * Instead, call methods on `<x-singleton>` element like this:
+       * Instead, call methods on `<f-singleton>` element like this:
        *
-       *     this.$$('x-singleton').set('data.prop', 'val')
+       *     this.$$('f-singleton').set('data.prop', 'val')
        *
        * Supported methods are:
        *   - `set(path, value)`
@@ -41,6 +41,7 @@ Example:
       data: {
         type: Object,
         readOnly: true,
+        notify: true,
         value: () => state
       }
     },

@@ -6,7 +6,7 @@ Common use case is to provide shared state in your elements (e.g. configuration)
 
 API documentation and demo are in [Component page](https://firmfirm.github.io/f-singleton/).
 
-Using ES6 features, so be careful in Production apps.
+Using ES6 features, so take care in production apps.
 
 ## Missing Features
 
