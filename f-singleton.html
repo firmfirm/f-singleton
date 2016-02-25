@@ -1,14 +1,14 @@
 <link rel="import" href="../polymer/polymer.html">
 
 <!--
-`<f-singleton>` element helps implementing singleton pattern declaratively.
+`<f-singleton>` is a Polymer element that helps implementing singleton pattern declaratively.
 
-Common use case is to provide shared state in your elements (e.g. configuration).
+Common use case is to provide shared state in your elements (e.g. for configuration).
 
 Example:
 
-    <f-singleton data="{{data}}"></f-singleton>
-    <p>[[data.something]]</p>
+    <f-singleton key="myKey" value="{{myValue}}"></f-singleton>
+    <p>[[myValue]]</p>
 
 @element f-singleton
 @demo demo/index.html
@@ -31,6 +31,8 @@ Example:
        *
        *     this.$$('f-singleton').set('data.prop', 'val')
        *
+       * Or **(better)** use `key` and `value` properties.
+       *
        * Supported methods are:
        *   - `set(path, value)`
        *   - `push(path, item)`
@@ -43,8 +45,32 @@ Example:
         readOnly: true,
         notify: true,
         value: () => state
+      },
+
+      /*
+       * Property name to bind `value` to.
+       *
+       * e.g. `key="myKey"` would bind `value` to `data.myKey`
+       *
+       * NOTE: deep keys are not supported for now, so if you set key to
+       * something like `myObj.myProp` it will **not work**.
+       */
+      key: {
+        type: String,
+        observer: '_keyChanged'
+      },
+
+      /*
+       * Has value of `data[key]`. Can be used with a two-way binding.
+       */
+      value: {
+        type: String,
+        notify: true,
+        observer: '_valueChanged'
       }
     },
+
+    observers: [ '_dataChanged(data.*)' ],
 
     created: function() {
       var override = (originalFn, override) => (...args) => {
@@ -54,8 +80,8 @@ Example:
         }
       };
 
-      var originalNotifyPath = this.notifyPath;
-      var notifyPathAll = (args) => this._invokeInstances(originalNotifyPath, args);
+      this._originalNotifyPath = this.notifyPath;
+      var notifyPathAll = (args) => this._invokeInstances(this._originalNotifyPath, args);
 
       this.set = override(this.set, notifyPathAll);
       this.notifyPath = override(this.notifyPath, notifyPathAll);
@@ -84,6 +110,26 @@ Example:
         if (instance !== this) {
           fn.apply(instance, args);
         }
+      }
+    },
+
+    _keyChanged: function(key) {
+      this.value = this.data[this.key];
+    },
+
+    _valueChanged: function(value) {
+      if (!this.key) return;
+      this.set('data.' + this.key, value);
+    },
+
+    _dataChanged: function(changeRecord) {
+      if (!this.key) return;
+      var path = 'data.' + this.key;
+      if (changeRecord.path === path) {
+        this.value = this.data[this.key];
+      } else if (changeRecord.path.startsWith(path)) {
+        var valuePath = changeRecord.path.replace(path, 'value');
+        this._originalNotifyPath(valuePath, changeRecord.value);
       }
     }
   });

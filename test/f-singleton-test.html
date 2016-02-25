@@ -34,6 +34,13 @@
         state2 = fixture('state2-fixture');
       });
 
+      afterEach(() => {
+        for (var key in state1.data) {
+          // Since data is shared it persists when you create a new fixture
+          delete state1.data[key];
+        }
+      });
+
       it('shares the same `config` object', () => {
         expect(state1.data).to.be.an('object');
         expect(state1.data).to.equal(state2.data);
@@ -65,6 +72,46 @@
           state2.push('data.test', 'test');
         });
 
+      });
+
+      describe('[key] and [value]', function() {
+
+        it('setting [key] sets [value] from data obj and fires `value-changed`', function(done) {
+          state1.data.someKey = 'someVal';
+          state1.addEventListener('value-changed', function() {
+            expect(state1.value).to.equal('someVal');
+            done();
+          });
+          state1.key = 'someKey';
+        });
+
+        it('setting data.[key] updates [value]', function() {
+          state1.key = 'someKey';
+          expect(state1.value).to.not.be.ok;
+          state1.set('data.someKey', 'someVal');
+          expect(state1.value).to.equal('someVal');
+        });
+
+        it('setting data[key].* notifies [value] change', function(done) {
+          state1.key = 'someKey';
+          var val = {sub: 'value'};
+          state1.set('data.someKey', val);
+          expect(state1.value).to.equal(val);
+          state1.addEventListener('value-changed', function() {
+            expect(state1.value.sub).to.equal('new');
+            done();
+          });
+          state1.set('data.someKey.sub', 'new');
+        });
+
+        it('setting [value] updates data[key], which updates other users', function() {
+          expect(state1.data.someKey).to.not.be.ok;
+          expect(state2.value).to.not.be.ok;
+          state1.key = state2.key = 'someKey';
+          state1.value = 'someValue';
+          expect(state1.data.someKey).to.equal('someValue');
+          expect(state2.value).to.equal('someValue');
+        });
       });
 
     });

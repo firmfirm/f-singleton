@@ -1,6 +1,6 @@
 # `<f-singleton>` [ ![Codeship Status for firmfirm/f-singleton](https://codeship.com/projects/286d0510-bc49-0133-92b3-568b1089e8b8/status?branch=master)](https://codeship.com/projects/136142)
 
-An element for implementing singleton pattern declaratively.
+Polymer element that helps implementing singleton pattern declaratively.
 
 Common use case is to provide shared state in your elements (e.g. configuration).
 

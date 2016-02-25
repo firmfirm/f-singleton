@@ -14,14 +14,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
     <title>f-singleton Demo</title>
     <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
-    <link rel="import" href="./some-element.html">
+    <link rel="import" href="../../polymer/polymer.html">
+    <link rel="import" href="../f-singleton.html">
   </head>
   <body unresolved>
 
     <p>An example of <code>&lt;f-singleton&gt;</code>:</p>
-    
-    <some-element></some-element>
-    <some-element></some-element>
+
+    <template is="dom-bind">
+      <f-singleton key="sameKey" value="{{first}}"></f-singleton>
+      <f-singleton key="sameKey" value="{{second}}"></f-singleton>
+      <input value="{{first::input}}"></input>
+      <input value="{{second::input}}"></input>
+    </template>
 
   </body>
 </html>
