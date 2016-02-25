@@ -1,4 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../finterface-key-value-store/finterface-key-value-store.html">
 
 <!--
 `<f-singleton>` is a Polymer element that helps implementing singleton pattern declaratively.
@@ -9,6 +10,28 @@ Example:
 
     <f-singleton key="myKey" value="{{myValue}}"></f-singleton>
     <p>[[myValue]]</p>
+
+`key` is a property name to bind `value` to,
+e.g. `key="myKey"` would bind `value` to `_data.myKey`.
+
+### NOTE
+
+Deep keys are not supported for now, so it will **not work** if you set `key="myObj.myProp"`.
+
+## Private _data
+
+Every instance of `<f-singleton>` points to the same `_data` object. **Do not**
+use Polymer's two-way binding to set properties of `_data`.
+Instead, if absolutely needed, call methods on `<f-singleton>` element like this:
+
+     this.$$('f-singleton').set('_data.prop', 'val')
+
+Other supported methods are:
+  - `set(path, value)`
+  - `push(path, item)`
+  - `notifyPath(path, value, fromAbove)`
+
+However, in most cases you will be good with just `key` and `value` properties.
 
 @element f-singleton
 @demo demo/index.html
@@ -23,59 +46,26 @@ Example:
 
   Polymer({
     is: 'f-singleton',
+    behaviors: [FInterface.KeyValueStore],
     properties: {
-      /**
-       * Every instance of `<f-singleton>` points to the same `data` object.
-       * **Do not** use Polymer's two-way binding to set properties of `data`.
-       * Instead, call methods on `<f-singleton>` element like this:
-       *
-       *     this.$$('f-singleton').set('data.prop', 'val')
-       *
-       * Or **(better)** use `key` and `value` properties.
-       *
-       * Supported methods are:
-       *   - `set(path, value)`
-       *   - `push(path, item)`
-       *   - `notifyPath(path, value, fromAbove)`
-       *
-       * @default {}
-       */
-      data: {
+      _data: {
         type: Object,
         readOnly: true,
         notify: true,
         value: () => state
-      },
-
-      /*
-       * Property name to bind `value` to.
-       *
-       * e.g. `key="myKey"` would bind `value` to `data.myKey`
-       *
-       * NOTE: deep keys are not supported for now, so if you set key to
-       * something like `myObj.myProp` it will **not work**.
-       */
-      key: {
-        type: String,
-        observer: '_keyChanged'
-      },
-
-      /*
-       * Has value of `data[key]`. Can be used with a two-way binding.
-       */
-      value: {
-        type: String,
-        notify: true,
-        observer: '_valueChanged'
       }
     },
 
-    observers: [ '_dataChanged(data.*)' ],
+    observers: [
+      '_dataChanged(_data.*)',
+      '_keyChanged(key)',
+      '_valueChanged(value)'
+    ],
 
     created: function() {
       var override = (originalFn, override) => (...args) => {
         originalFn.apply(this, args);
-        if (args[0].split(".")[0] === "data") {
+        if (args[0].split(".")[0] === "_data") {
           override(args);
         }
       };
@@ -114,19 +104,19 @@ Example:
     },
 
     _keyChanged: function(key) {
-      this.value = this.data[this.key];
+      this.value = this._data[this.key];
     },
 
     _valueChanged: function(value) {
       if (!this.key) return;
-      this.set('data.' + this.key, value);
+      this.set('_data.' + this.key, value);
     },
 
     _dataChanged: function(changeRecord) {
       if (!this.key) return;
-      var path = 'data.' + this.key;
+      var path = '_data.' + this.key;
       if (changeRecord.path === path) {
-        this.value = this.data[this.key];
+        this.value = this._data[this.key];
       } else if (changeRecord.path.startsWith(path)) {
         var valuePath = changeRecord.path.replace(path, 'value');
         this._originalNotifyPath(valuePath, changeRecord.value);
