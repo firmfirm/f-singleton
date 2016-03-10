@@ -2,15 +2,38 @@
 
 Polymer element that helps implementing singleton pattern declaratively.
 
-Common use case is to provide shared state in your elements (e.g. configuration).
-
-API documentation and demo are in [Component page](https://firmfirm.github.io/f-singleton/).
+Common use case is to provide shared state in your elements (e.g. for configuration).
 
 Using ES6 features, so take care in production apps.
 
+  - Try out [live demo](https://firmfirm.github.io/f-singleton/components/f-singleton/demo/).
+  - Learn about element properties and methods in [component page](https://firmfirm.github.io/f-singleton/).
+  - [Run tests](https://firmfirm.github.io/f-singleton/components/f-singleton/test/) in your browser.
+
+## Example:
+
+```html
+<f-singleton key="myKey" value="something"></f-singleton>
+<f-singleton key="myKey" value="{{myValue}}"></f-singleton>
+<!-- myValue is now 'something' -->
+<p>[[myValue]]</p>
+```
+
+`key` is a property name to bind `value` to.
+You can also use deep keys, like `key="myObj.myProp"`.
+
 ## Missing Features
 
-The following Polymer helper methods are **not** implemented: `pop`, `shift`, `unshift`, or `splice`.
+The following Polymer helper methods are **not** implemented for manipulating `data` object directly:
+
+`pop`, `shift`, `unshift`, or `splice`.
+
+It would also be great to implement "domains" so that there could be different
+groups of singletons.
+
+# Development
+
+From here on, documentation will only concern development of this component.
 
 ## Dependencies
 
@@ -62,8 +85,3 @@ Then, you can run your tests on _all_ of your local browsers via:
 `wct -p` will keep the browsers alive after test runs (refresh to re-run).
 
 `wct test/some-file.html` will test only the files you specify.
-
-
-## Yeoman support
-
-If you'd like to use Yeoman to scaffold your element that's possible. The official [`generator-polymer`](https://github.com/yeoman/generator-polymer) generator has a [`seed`](https://github.com/yeoman/generator-polymer#seed) subgenerator.
