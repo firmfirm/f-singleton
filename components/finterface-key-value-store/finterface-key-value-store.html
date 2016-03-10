@@ -1,0 +1,32 @@
+<script>
+
+window.FInterface = window.FInterface || {};
+
+/**
+ * `FInterface.KeyValueStore` is public interface of any element that is a key-value store.
+ *
+ * To be used in key-value stores, their wrappers, stubs or replacements.
+ *
+ * @polymerBehavior
+ */
+FInterface.KeyValueStore = {
+  properties: {
+    /*
+     * Key of stored object
+     */
+    key: {
+      type: String,
+      reflectToAttribute: true
+    },
+
+    /*
+     * Stored object
+     */
+    value: {
+      type: Object,
+      notify: true
+    }
+  }
+}
+
+</script>

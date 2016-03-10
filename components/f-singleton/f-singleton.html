@@ -1,0 +1,146 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../finterface-key-value-store/finterface-key-value-store.html">
+
+<!--
+`<f-singleton>` is a Polymer element that helps implementing singleton pattern declaratively.
+
+Common use case is to provide shared state in your elements (e.g. for configuration).
+
+## Private data
+
+Every instance of `<f-singleton>` points to the same `data` object. **Do not**
+use Polymer's two-way binding to set properties of `data` directly.
+Instead, if absolutely needed, call methods on `<f-singleton>` element like this:
+
+     this.$$('f-singleton').set('data.prop', 'val')
+
+Supported methods are:
+  - `set(path, value)`
+  - `push(path, item)`
+  - `notifyPath(path, value, fromAbove)`
+
+However, in most cases you will be good with just `key` and `value` properties.
+
+Example:
+
+    <f-singleton key="myKey" value="something"></f-singleton>
+    <f-singleton key="myKey" value="{{myValue}}"></f-singleton>
+    <p>[[myValue]]</p>
+
+`key` is a property name to bind `value` to,
+e.g. `key="myKey"` would bind `value` to `data.myKey`.
+
+You can also use deep keys, like `key="myObj.myProp"`.
+
+@element f-singleton
+@demo demo/index.html
+-->
+
+<script>
+
+(function() {
+  'use strict'
+  let instances = [];
+  let state = {};
+
+  Polymer({
+    is: 'f-singleton',
+    behaviors: [FInterface.KeyValueStore],
+    properties: {
+      /**
+       * Shared data object
+       */
+      data: {
+        type: Object,
+        readOnly: true,
+        notify: true,
+        value: () => state
+      }
+    },
+
+    observers: [
+      '_dataChanged(data.*)',
+      '_keyChanged(key)',
+      '_valueChanged(value)'
+    ],
+
+    created: function() {
+      var override = (originalFn, override) => (...args) => {
+        originalFn.apply(this, args);
+        if (args[0].split(".")[0] === "data") {
+          override(args);
+        }
+      };
+
+      this._originalNotifyPath = this.notifyPath;
+      var notifyPathAll = (args) => this._invokeInstances(this._originalNotifyPath, args);
+
+      this.set = override(this.set, notifyPathAll);
+      this.notifyPath = override(this.notifyPath, notifyPathAll);
+
+      this.push = override(this.push, (args) => {
+        var path = args[0];
+        var array = this.get(path);
+        var pushed = Array.prototype.slice.call(args, 1);
+        var splice = {
+          type: 'splice',
+          object: array,
+          removed: [],
+          addedCount: pushed.length,
+          index: array.length - pushed.length
+        };
+        this._invokeInstances(this.notifySplices, [path, [splice]]);
+      });
+      instances.push(this);
+    },
+
+    detached: function() { instances.splice(instances.indexOf(this), 1); },
+
+    _invokeInstances: function(fn, args) {
+      for (var i = 0; i < instances.length; i++) {
+        let instance = instances[i];
+        if (instance !== this) {
+          fn.apply(instance, args);
+        }
+      }
+    },
+
+    _keyChanged: function(key) {
+      this.value = key.split('.').reduce(
+        (data, key) => data ? data[key] : null, this.data);
+    },
+
+    _valueChanged: function(value) {
+      if (!this.key) return;
+
+      // Create path in data object if doesnt exist
+      var parts = this.key.split('.');
+      parts.pop();
+      parts.reduce(function(data, key) {
+        if (!data[key]) data[key] = {};
+        return data[key];
+      }, this.data);
+
+      this.set('data.' + this.key, value);
+    },
+
+    _dataChanged: function(changeRecord) {
+      if (!this.key) return;
+      var path = 'data.' + this.key;
+      if (changeRecord.path === path) {
+        // Exact match
+        this.value = changeRecord.value;
+      } else if (changeRecord.path.startsWith(path)) {
+        // Part of value changed
+        var valuePath = changeRecord.path.replace(path, 'value');
+        this._originalNotifyPath(valuePath, changeRecord.value);
+      } else if (path.startsWith(changeRecord.path)) {
+        // The whole value changed - have to recalculate
+        this._keyChanged(this.key);
+      }
+    }
+  });
+
+})();
+
+</script>

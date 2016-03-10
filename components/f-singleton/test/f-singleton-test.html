@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+
+    <link rel="import" href="../f-singleton.html">
+  </head>
+  <body>
+
+  <test-fixture id="state1-fixture">
+    <template>
+      <f-singleton></f-singleton>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="state2-fixture">
+    <template>
+      <f-singleton></f-singleton>
+    </template>
+  </test-fixture>
+
+  <script>
+    'use strict'
+    describe(window.location.href.indexOf('dom=shadow') > -1
+    ? '[shadow] <zamok-auth>'
+    : '<zamok-auth>', () => {
+
+      let state1, state2;
+
+      beforeEach(() => {
+        state1 = fixture('state1-fixture');
+        state2 = fixture('state2-fixture');
+      });
+
+      afterEach(() => {
+        for (var key in state1.data) {
+          // Since data is shared it persists when you create a new fixture
+          delete state1.data[key];
+        }
+      });
+
+      it('shares the same `config` object', () => {
+        expect(state1.data).to.be.an('object');
+        expect(state1.data).to.equal(state2.data);
+      });
+
+      describe('fires `data-changed` event for other f-singleton users', () => {
+
+        it('set', (done) => {
+          state1.addEventListener('data-changed', (e) => {
+            expect(e.detail.path).to.equal('data.test');
+            expect(e.detail.value).to.equal('test');
+            done();
+          });
+          state2.set('data.test', 'test');
+        });
+
+        it('push', (done) => {
+          state2.set('data.test', []);
+          state1.addEventListener('data-changed', (e) => {
+            if (e.detail.path === 'data.test.splices') {
+              let splices = e.detail.value.indexSplices;
+              expect(splices.length).to.equal(1);
+              let splice = splices[0];
+              expect(splice.addedCount).to.equal(1);
+              expect(splice.index).to.equal(0);
+              done();
+            }
+          });
+          state2.push('data.test', 'test');
+        });
+
+      });
+
+      describe('[key] and [value]', function() {
+
+        it('setting [key] sets [value] from data obj and fires `value-changed`', function(done) {
+          state1.data.someKey = 'someVal';
+          state1.addEventListener('value-changed', function() {
+            expect(state1.value).to.equal('someVal');
+            done();
+          });
+          state1.key = 'someKey';
+        });
+
+        it('setting data.[key] updates [value]', function() {
+          state1.key = 'someKey';
+          expect(state1.value).to.not.be.ok;
+          state1.set('data.someKey', 'someVal');
+          expect(state1.value).to.equal('someVal');
+        });
+
+        it('setting data[key].* notifies [value] change', function(done) {
+          state1.key = 'someKey';
+          var val = {sub: 'value'};
+          state1.set('data.someKey', val);
+          expect(state1.value).to.equal(val);
+          state1.addEventListener('value-changed', function() {
+            expect(state1.value.sub).to.equal('new');
+            done();
+          });
+          state1.set('data.someKey.sub', 'new');
+        });
+
+        it('setting [value] updates data[key], which updates other users', function() {
+          expect(state1.data.someKey).to.not.be.ok;
+          expect(state2.value).to.not.be.ok;
+          state1.key = state2.key = 'someKey';
+          state1.value = 'someValue';
+          expect(state1.data.someKey).to.equal('someValue');
+          expect(state2.value).to.equal('someValue');
+        });
+
+        it('works with deep keys', function() {
+          state1.key = 'some.deep.key';
+          expect(state1.data.some.deep.key).to.be.null;
+          state1.value = 'deep';
+          expect(state1.data.some.deep.key).to.equal('deep');
+          state1.set('data.some.deep.key', 'deeper');
+          expect(state1.value).to.equal('deeper');
+        });
+      });
+
+    });
+  </script>
+
+</body>
+</html>
