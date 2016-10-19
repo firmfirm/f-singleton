@@ -1,4 +1,3 @@
-<link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../finterface-key-value-store/finterface-key-value-store.html">
 
 <!--
@@ -43,28 +42,32 @@ You can also use deep keys, like `key="myObj.myProp"`.
   let instances = [];
   let state = {};
 
-  Polymer({
-    is: 'f-singleton',
-    behaviors: [FInterface.KeyValueStore],
-    properties: {
-      /**
-       * Shared data object
-       */
-      data: {
-        type: Object,
-        readOnly: true,
-        notify: true,
-        value: () => state
-      }
-    },
+  class FSingleton extends FInterface.KeyValueStore(Polymer.Element) {
+    static get is() { return 'f-singleton'; }
+    static get config() {
+      return {
+        properties: {
+          /**
+           * Shared data object
+           */
+          data: {
+            type: Object,
+            readOnly: true,
+            notify: true,
+            value: () => state
+          }
+        },
 
-    observers: [
-      '_dataChanged(data.*)',
-      '_keyChanged(key)',
-      '_valueChanged(value)'
-    ],
+        observers: [
+          '_dataChanged(data.*)',
+          '_keyChanged(key)',
+          '_valueChanged(value)'
+        ],
+      };
+    }
 
-    created: function() {
+    constructor() {
+      super();
       var override = (originalFn, override) => (...args) => {
         originalFn.apply(this, args);
         if (args[0].split(".")[0] === "data") {
@@ -92,25 +95,28 @@ You can also use deep keys, like `key="myObj.myProp"`.
         this._invokeInstances(this.notifySplices, [path, [splice]]);
       });
       instances.push(this);
-    },
+    }
 
-    detached: function() { instances.splice(instances.indexOf(this), 1); },
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      instances.splice(instances.indexOf(this), 1);
+    }
 
-    _invokeInstances: function(fn, args) {
+    _invokeInstances(fn, args) {
       for (var i = 0; i < instances.length; i++) {
         let instance = instances[i];
         if (instance !== this) {
           fn.apply(instance, args);
         }
       }
-    },
+    }
 
-    _keyChanged: function(key) {
+    _keyChanged(key) {
       this.value = key.split('.').reduce(
         (data, key) => data ? data[key] : null, this.data);
-    },
+    }
 
-    _valueChanged: function(value) {
+    _valueChanged(value) {
       if (!this.key) return;
 
       // Create path in data object if doesnt exist
@@ -122,14 +128,16 @@ You can also use deep keys, like `key="myObj.myProp"`.
       }, this.data);
 
       this.set('data.' + this.key, value);
-    },
+    }
 
-    _dataChanged: function(changeRecord) {
+    _dataChanged(changeRecord) {
       if (!this.key) return;
       var path = 'data.' + this.key;
       if (changeRecord.path === path) {
         // Exact match
-        this.value = changeRecord.value;
+        if (this.value !== changeRecord.value) {
+          this.value = changeRecord.value;
+        }
       } else if (changeRecord.path.startsWith(path)) {
         // Part of value changed
         var valuePath = changeRecord.path.replace(path, 'value');
@@ -139,7 +147,8 @@ You can also use deep keys, like `key="myObj.myProp"`.
         this._keyChanged(this.key);
       }
     }
-  });
+  }
+  customElements.define(FSingleton.is, FSingleton);
 
 })();
 

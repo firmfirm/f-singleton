@@ -7,8 +7,7 @@ Common use case is to provide shared state in your elements (e.g. for configurat
 Using ES6 features, so take care in production apps.
 
   - Try out [live demo](https://firmfirm.github.io/f-singleton/components/f-singleton/demo/).
-  - Learn about element properties and methods in [component page](https://firmfirm.github.io/f-singleton/).
-  - [Run tests](https://firmfirm.github.io/f-singleton/components/f-singleton/test/) in your browser.
+  - Learn about element properties and methods in [component page](https://firmfirm.github.io/f-singleton/) (**temporarily not working**).
 
 ## Example:
 
