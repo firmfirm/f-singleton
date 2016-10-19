@@ -119,22 +119,24 @@ You can also use deep keys, like `key="myObj.myProp"`.
     _valueChanged(value) {
       if (!this.key) return;
 
-      // Create path in data object if doesnt exist
-      var parts = this.key.split('.');
-      parts.pop();
-      parts.reduce(function(data, key) {
-        if (!data[key]) data[key] = {};
-        return data[key];
-      }, this.data);
-
-      this.set('data.' + this.key, value);
+      const parts = this.key.split('.');
+      const currentValue = parts.reduce((d, k) => d && d[k], this.data);
+      if (currentValue !== value) {
+        // Create path in data object if doesnt exist
+        parts.pop();
+        parts.reduce(function(data, key) {
+          if (!data[key]) data[key] = {};
+          return data[key];
+        }, this.data);
+        this.set('data.' + this.key, value);
+      }
     }
 
     _dataChanged(changeRecord) {
       if (!this.key) return;
       var path = 'data.' + this.key;
       if (changeRecord.path === path) {
-        // Exact match
+        // Exact match, dirty check
         if (this.value !== changeRecord.value) {
           this.value = changeRecord.value;
         }
