@@ -37,7 +37,8 @@ You can also use deep keys, like `key="myObj.myProp"`.
 
 <script>
 
-(function() {
+window.FirmFirm = window.FirmFirm || {};
+FirmFirm.FSingleton = (function() {
   'use strict'
   let instances = [];
   let state = {};
@@ -151,7 +152,7 @@ You can also use deep keys, like `key="myObj.myProp"`.
     }
   }
   customElements.define(FSingleton.is, FSingleton);
-
+  return FSingleton;
 })();
 
 </script>
