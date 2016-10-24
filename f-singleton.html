@@ -113,12 +113,16 @@ FirmFirm.FSingleton = (function() {
     }
 
     _keyChanged(key) {
-      this.value = key.split('.').reduce(
+      if (!key) return;
+      const newValue = key.split('.').reduce(
         (data, key) => data ? data[key] : null, this.data);
+      if (typeof newValue !== "undefined" && this.value !== newValue) {
+        this.value = newValue;
+      }
     }
 
     _valueChanged(value) {
-      if (!this.key) return;
+      if (!this.key || typeof value === "undefined") return;
 
       const parts = this.key.split('.');
       const currentValue = parts.reduce((d, k) => d && d[k], this.data);
