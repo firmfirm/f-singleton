@@ -55,7 +55,7 @@ FirmFirm.FSingleton = (function() {
             type: Object,
             readOnly: true,
             notify: true,
-            value: () => state
+            value: () => state,
           }
         },
 
@@ -95,6 +95,10 @@ FirmFirm.FSingleton = (function() {
         };
         this._invokeInstances(this.notifySplices, [path, [splice]]);
       });
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
       instances.push(this);
     }
 
