@@ -58,18 +58,88 @@
         });
 
         it('push', (done) => {
-          state2.set('data.test', []);
+          state2.set('data.test', ['sup', 1]);
           state1.addEventListener('data-changed', (e) => {
             if (e.detail.path === 'data.test.splices') {
               let splices = e.detail.value.indexSplices;
               expect(splices.length).to.equal(1);
               let splice = splices[0];
+              expect(splice.removed).to.deep.equal([]);
               expect(splice.addedCount).to.equal(1);
-              expect(splice.index).to.equal(0);
+              expect(splice.index).to.equal(2);
+              expect(splice.object).to.deep.equal(['sup', 1, 'test']);
               done();
             }
           });
           state2.push('data.test', 'test');
+        });
+
+        it('pop', (done) => {
+          state2.set('data.test', [1, 2, 3]);
+          state1.addEventListener('data-changed', (e) => {
+            if (e.detail.path === 'data.test.splices') {
+              let splices = e.detail.value.indexSplices;
+              expect(splices.length).to.equal(1);
+              let splice = splices[0];
+              expect(splice.addedCount).to.equal(0);
+              expect(splice.index).to.equal(2);
+              expect(splice.removed).to.deep.equal([3]);
+              expect(splice.object).to.deep.equal([1, 2]);
+              done();
+            }
+          });
+          state2.pop('data.test');
+        });
+
+        it('shift', (done) => {
+          state2.set('data.test', [1, 2, 3]);
+          state1.addEventListener('data-changed', (e) => {
+            if (e.detail.path === 'data.test.splices') {
+              let splices = e.detail.value.indexSplices;
+              expect(splices.length).to.equal(1);
+              let splice = splices[0];
+              expect(splice.addedCount).to.equal(0);
+              expect(splice.index).to.equal(0);
+              expect(splice.removed).to.deep.equal([1]);
+              expect(splice.object).to.deep.equal([2, 3]);
+              done();
+            }
+          });
+          state2.shift('data.test');
+        });
+
+        it('unshift', (done) => {
+          state2.set('data.test', [1, 2, 3]);
+          state1.addEventListener('data-changed', (e) => {
+            if (e.detail.path === 'data.test.splices') {
+              let splices = e.detail.value.indexSplices;
+              expect(splices.length).to.equal(1);
+              let splice = splices[0];
+              expect(splice.addedCount).to.equal(2);
+              expect(splice.index).to.equal(0);
+              expect(splice.removed).to.deep.equal([]);
+              expect(splice.object).to.deep.equal([4, 5, 1, 2, 3]);
+              done();
+            }
+          });
+          state2.unshift('data.test', 4, 5);
+        });
+
+        it('splice', (done) => {
+          state2.set('data.test', [1, 2, 3]);
+          state1.addEventListener('data-changed', e => {
+            if (e.detail.path === 'data.test.splices') {
+              let splices = e.detail.value.indexSplices;
+              expect(splices.length).to.equal(1);
+              let splice = splices[0];
+              expect(splice.removed).to.deep.equal([2]);
+              expect(splice.addedCount).to.equal(2);
+              expect(splice.index).to.equal(1);
+              expect(splice.object).to.deep.equal([1, 4, 5, 3]);
+              done();
+            }
+          });
+          state2.splice('data.test', 1, 1, 4, 5);
         });
 
       });

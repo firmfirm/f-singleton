@@ -69,11 +69,12 @@ FirmFirm.FSingleton = (function() {
 
     constructor() {
       super();
-      var override = (originalFn, override) => (...args) => {
-        originalFn.apply(this, args);
+      var override = (originalFn, notifyAll) => (...args) => {
+        const result = originalFn.apply(this, args);
         if (args[0].split(".")[0] === "data") {
-          override(args);
+          notifyAll(args, result);
         }
+        return result;
       };
 
       this._originalNotifyPath = this.notifyPath;
@@ -82,19 +83,44 @@ FirmFirm.FSingleton = (function() {
       this.set = override(this.set, notifyPathAll);
       this.notifyPath = override(this.notifyPath, notifyPathAll);
 
-      this.push = override(this.push, (args) => {
-        var path = args[0];
-        var array = this.get(path);
-        var pushed = Array.prototype.slice.call(args, 1);
-        var splice = {
-          type: 'splice',
-          object: array,
-          removed: [],
-          addedCount: pushed.length,
-          index: array.length - pushed.length
-        };
-        this._invokeInstances(this.notifySplices, [path, [splice]]);
-      });
+      this._originalNotifySplices = this.notifySplices;
+      var notifySplicesAll = (args) => this._invokeInstances(this._originalNotifySplices, args);
+      this.notifySplices = override(this.notifySplices, notifySplicesAll);
+
+      const overrideSplices = (originalFn, getSplice) => override(
+        originalFn,
+        ([path, ...args], result) => {
+          const object = this.get(path);
+          notifySplicesAll([
+            path,
+            [Object.assign({type: 'splice', object}, getSplice(args, object, result))],
+          ]);
+        }
+      );
+
+      this.splice = overrideSplices(this.splice, ([index, deleteCount, ...items], array, removed) => ({
+        removed, index, addedCount: items.length,
+      }));
+      this.push = overrideSplices(this.push, ([...pushed], array) => ({
+        removed: [],
+        addedCount: pushed.length,
+        index: array.length - pushed.length
+      }));
+      this.pop = overrideSplices(this.pop, (_, array, result) => ({
+        removed: [result],
+        addedCount: 0,
+        index: array.length,
+      }));
+      this.shift = overrideSplices(this.shift, (_, array, result) => ({
+        removed: [result],
+        addedCount: 0,
+        index: 0,
+      }));
+      this.unshift = overrideSplices(this.unshift, ([...items], array, result) => ({
+        removed: [],
+        addedCount: items.length,
+        index: 0,
+      }));
     }
 
     connectedCallback() {
