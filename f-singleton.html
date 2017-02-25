@@ -45,26 +45,26 @@ FirmFirm.FSingleton = (function() {
 
   class FSingleton extends FInterface.KeyValueStore(Polymer.Element) {
     static get is() { return 'f-singleton'; }
-    static get config() {
+    static get properties() {
       return {
-        properties: {
-          /**
-           * Shared data object
-           */
-          data: {
-            type: Object,
-            readOnly: true,
-            notify: true,
-            value: () => state,
-          }
-        },
-
-        observers: [
-          '_dataChanged(data.*)',
-          '_keyChanged(key)',
-          '_valueChanged(value)'
-        ],
+        /**
+         * Shared data object
+         */
+        data: {
+          type: Object,
+          readOnly: true,
+          notify: true,
+          value: () => state,
+        }
       };
+    }
+
+    static get observers() {
+      return [
+        '_dataChanged(data.*)',
+        '_keyChanged(key)',
+        '_valueChanged(value)'
+      ];
     }
 
     constructor() {
