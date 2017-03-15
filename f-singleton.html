@@ -43,7 +43,7 @@ FirmFirm.FSingleton = (function() {
   let instances = [];
   let state = {};
 
-  class FSingleton extends FInterface.KeyValueStore(Polymer.Element) {
+  class FSingleton extends Polymer.MutableData(FInterface.KeyValueStore(Polymer.Element)) {
     static get is() { return 'f-singleton'; }
     static get properties() {
       return {
