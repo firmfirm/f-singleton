@@ -1,6 +1,5 @@
 {
   "name": "f-singleton",
-  "version": "2.0.5",
   "authors": [
     "Martynas <martynas@firmfirm.co>"
   ],
@@ -18,16 +17,12 @@
     "/.*"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#2.0-preview",
-    "finterface-key-value-store": "^2.0.0"
+    "polymer": "~2.0.0",
+    "finterface-key-value-store": "~2.0.0"
   },
   "devDependencies": {
-    "iron-component-page": "PolymerElements/iron-component-page#2.0-preview",
-    "webcomponentsjs": "webcomponents/webcomponentsjs#v1",
-    "web-component-tester": "Polymer/web-component-tester#^4.3.5"
-  },
-  "resolutions": {
-    "webcomponentsjs": "v1",
-    "polymer": "2.0-preview"
+    "iron-component-page": "~2.0.0",
+    "webcomponentsjs": "~1.0.0",
+    "web-component-tester": "~6.0.0"
   }
 }
