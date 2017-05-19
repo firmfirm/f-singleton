@@ -1,38 +1,6 @@
 <link rel="import" href="../finterface-key-value-store/finterface-key-value-store.html">
 
 <!--
-`<f-singleton>` is a Polymer element that helps implementing singleton pattern declaratively.
-
-Common use case is to provide shared state in your elements (e.g. for configuration).
-
-## Private data
-
-Every instance of `<f-singleton>` points to the same `data` object. **Do not**
-use Polymer's two-way binding to set properties of `data` directly.
-Instead, if absolutely needed, call methods on `<f-singleton>` element like this:
-
-     this.$$('f-singleton').set('data.prop', 'val')
-
-Supported methods are:
-  - `set(path, value)`
-  - `push(path, item)`
-  - `notifyPath(path, value, fromAbove)`
-
-However, in most cases you will be good with just `key` and `value` properties.
-
-Example:
-
-    <f-singleton key="myKey" value="something"></f-singleton>
-    <f-singleton key="myKey" value="{{myValue}}"></f-singleton>
-    <p>[[myValue]]</p>
-
-`key` is a property name to bind `value` to,
-e.g. `key="myKey"` would bind `value` to `data.myKey`.
-
-You can also use deep keys, like `key="myObj.myProp"`.
-
-@element f-singleton
-@demo demo/index.html
 -->
 
 <script>
@@ -43,6 +11,42 @@ FirmFirm.FSingleton = (function() {
   let instances = [];
   let state = {};
 
+  /**
+   * `<f-singleton>` is a Polymer element that helps implementing singleton pattern declaratively.
+   *
+   * Common use case is to provide shared state in your elements (e.g. for configuration).
+   *
+   * ## Private data
+   *
+   * Every instance of `<f-singleton>` points to the same `data` object. **Do not**
+   * use Polymer's two-way binding to set properties of `data` directly.
+   * Instead, if absolutely needed, call methods on `<f-singleton>` element like this:
+   *
+   *   this.$$('f-singleton').set('data.prop', 'val')
+   *
+   * Supported methods are:
+   *   - `set(path, value)`
+   *   - `push(path, item)`
+   *   - `notifyPath(path, value, fromAbove)`
+   *
+   * However, in most cases you will be good with just `key` and `value` properties.
+   *
+   * Example:
+   *
+   *     <f-singleton key="myKey" value="something"></f-singleton>
+   *     <f-singleton key="myKey" value="{{myValue}}"></f-singleton>
+   *     <p>[[myValue]]</p>
+   *
+   * `key` is a property name to bind `value` to,
+   * e.g. `key="myKey"` would bind `value` to `data.myKey`.
+   *
+   * You can also use deep keys, like `key="myObj.myProp"`.
+   *
+   * @polymerElement
+   * @mixes Polymer.MutableData
+   * @mixes FInterface.KeyValueStore
+   * @demo demo/index.html
+   */
   class FSingleton extends Polymer.MutableData(FInterface.KeyValueStore(Polymer.Element)) {
     static get is() { return 'f-singleton'; }
     static get properties() {
