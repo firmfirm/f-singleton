@@ -1,7 +1,7 @@
 {
   "name": "f-singleton",
   "description": "Polymer element that helps implementing singleton pattern declaratively. Common use case is to provide shared state in your elements (e.g. for configuration).",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "main": "f-singleton.js",
   "author": "Martynas <martynas@firmfirm.co>",
   "scripts": {
