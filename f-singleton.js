@@ -1,9 +1,7 @@
-<link rel="import" href="../finterface-key-value-store/finterface-key-value-store.html">
+import 'finterface-key-value-store/finterface-key-value-store.js';
 
-<!--
--->
-
-<script>
+import { MutableData } from '@polymer/polymer/lib/mixins/mutable-data.js';
+import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 
 window.FirmFirm = window.FirmFirm || {};
 FirmFirm.FSingleton = (function() {
@@ -47,7 +45,7 @@ FirmFirm.FSingleton = (function() {
    * @mixes FInterface.KeyValueStore
    * @demo demo/index.html
    */
-  class FSingleton extends Polymer.MutableData(FInterface.KeyValueStore(Polymer.Element)) {
+  class FSingleton extends MutableData(FInterface.KeyValueStore(PolymerElement)) {
     static get is() { return 'f-singleton'; }
     static get properties() {
       return {
@@ -192,5 +190,3 @@ FirmFirm.FSingleton = (function() {
   customElements.define(FSingleton.is, FSingleton);
   return FSingleton;
 })();
-
-</script>

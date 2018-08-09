@@ -1,9 +1,13 @@
 {
   "name": "f-singleton",
-  "authors": [
-    "Martynas <martynas@firmfirm.co>"
-  ],
   "description": "Polymer element that helps implementing singleton pattern declaratively. Common use case is to provide shared state in your elements (e.g. for configuration).",
+  "version": "2.5.0",
+  "main": "f-singleton.js",
+  "author": "Martynas <martynas@firmfirm.co>",
+  "scripts": {
+    "test": "polymer test --npm",
+    "start": "polymer serve --npm"
+  },
   "keywords": [
     "shared",
     "state",
@@ -11,18 +15,14 @@
     "polymer",
     "web-components"
   ],
-  "main": "f-singleton.html",
   "homepage": "https://github.com/firmfirm/f-singleton/",
-  "ignore": [
-    "/.*"
-  ],
   "dependencies": {
-    "polymer": "~2.0.0",
-    "finterface-key-value-store": "~2.0.0"
+    "@polymer/polymer": "^3.0.0",
+    "finterface-key-value-store": "^2.5.1"
   },
   "devDependencies": {
-    "iron-component-page": "~2.0.0",
-    "webcomponentsjs": "~1.0.0",
-    "web-component-tester": "~6.0.0"
+    "@polymer/iron-component-page": "^3.0.0-pre.18",
+    "@webcomponents/webcomponentsjs": "^2.0.0",
+    "wct-browser-legacy": "^1.0.1"
   }
 }
